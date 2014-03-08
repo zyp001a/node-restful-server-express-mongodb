@@ -1,10 +1,17 @@
 module.exports = function(app, config) {
+	config.authenticateMethod = config.authenticateMethod || 
+		function(req, res, next){
+			next();
+		};
+
+
 	var mongo = require('mongodb'),
 			fs = require('fs');
 
 	var Server = mongo.Server,
 			Db = mongo.Db,
 			BSON = mongo.BSONPure;
+
 
 //	var config = require('./config');
 	var server = new Server(config.db.host, config.db.port, {auto_reconnect: true});
@@ -18,6 +25,8 @@ module.exports = function(app, config) {
 			utils.populateDB();
     }
 	});
+
+
 
 	require("./route")(app, config, utils);
 };

@@ -1,3 +1,4 @@
+
 module.exports = function(app, db, config) {
 	var entityCollection = config.db.entityCollection;
 	return {
@@ -66,15 +67,30 @@ module.exports = function(app, db, config) {
 		},
 		// Populate database with sample data -- Only used once: the first time the application is started.
 		// You'd typically not find this code in a real-life app, since the database would already exist.
-		populateDB: function() {
+		populateDB: function(force) {
 			db.collection(entityCollection, {safe:true}, function(err, collection) {
+				if(err || force){
+					var index = {};
+					config.field.unique.forEach(
+						function(uniqueField){
+							index[uniqueField]=1;
+							db.collection(entityCollection).ensureIndex(index, {unique:true}, 
+								function(err, indexName) {
+									if(err){
+										console.log('cannot set unique index: '+uniqueField);
+									}
+								});
+						}
+					);					
+				};
 				if (err) {
 					console.log("Collection doesn't exist. Creating it with sample data...");
-					var sampleData = config.sampleData;
 
+					var sampleData = config.sampleData;
 					db.collection(entityCollection, function(err, collection) {
 						collection.insert(sampleData, {safe:true}, function(err, result) {});
 					});
+
 				}
 			});
 		}
